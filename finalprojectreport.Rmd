@@ -1,0 +1,1005 @@
+---
+title: "Statistical project"
+author: "Brenda Téllez, Abishek Varma, Huzaifa"
+date: '2022-07-07'
+output:
+  pdf_document:
+    latex_engine: xelatex
+    dev: png
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+# RoadMap
+
+1)  Explain how you obtained the data
+-   Dataset Description
+
+2)  Clean and filter data & Feature Engineering
+-   Load the libraries needed
+-   Assign the appropriate data types
+-   Check for null values
+-   Check for infinite values
+-   Handle the Na values
+-   Find ways to fill the Na values in a meaningful manner
+-   check for irregularities in data(outliers)
+-   Handle the outliers
+-   Find features with single values
+-   Drop unwanted Features
+
+3)  Exploratory Data Analysis
+-   Explore the Categorical Features
+-   Find Categorical Feature Distribution
+-   Relationship between Categorical Features and Label
+-   Explore the Numerical Features
+-   Find Discrete Numerical Features
+-   Relation between Discrete numerical Features and Labels
+-   Find Continuous Numerical Features
+-   Distribution of Continuous Numerical Features
+-   Relation between Continuous numerical Features and Labels
+-   Find Outliers in numerical features
+-   Explore the Correlation between numerical features
+-   Find Pair Plot
+-   Handle Feature Scaling
+-   Handle Categorical Features
+-   Check the Data set is balanced or not based on target values in classification
+
+4)  Hypothesis Testing
+-   Chi-squared test in R can be used to test if two categorical variables are dependent, by means of a contingency table.
+-   T-test in R is used to draw a comparison or find the difference between one categorical (with **two categories**) and another continuous variable, then you need to work on the two-sample T-test, to find the significant difference between the two variables.
+
+5)  Modelling the data
+-   Logistic Regression
+-   LDA
+-   QDA
+-   Naive Bayes
+-   Knn
+
+# Setting up the working directory
+
+```{r Directory setup}
+#setwd("~/UNIPD/statistic 2/st")
+setwd("C:/Users/asus/Desktop/Masters/statistical learning/MOD.B/project")
+```
+
+Importing the libraries
+```{r Libraries used, warning=FALSE}
+library(dlookr)
+library(readr)
+library(lattice)
+library(modelr)
+library(MASS)
+library(rgl)
+library(fastDummies)
+library(recipes)
+library(dummy)
+library(zoo)
+library(ggstatsplot)
+library(inspectdf)
+library(ggplot2)
+library(ggthemes)
+library(vcd)
+library(ggmosaic)
+library(GGally)
+library(caTools)
+library(plyr)
+library(stringr)
+library(scales)
+library(dplyr)
+library(VIM)
+library(naniar)
+library(egg)
+```
+
+#Introduction
+•	Introduction
+A common practice to enhance and stimulate business growth is using marketing campaigns. Marketing campaigns come in many different forms, ranging from acquisition marketing campaigns to social media marketing campaigns. A common and widely used marketing campaign is the telemarketing strategy that banks oftentimes utilize due to the complex nature of financial products that require more nuanced explanations. However, telemarketing campaigns are demanding in terms of time, effort and resources needed. Therefore, it is of big significance to determine what factors associated with telemarketing, and/or otherwise, affect whether a client purchases financial products or not. 
+
+The aim of this project is to analyze the dataset, identify trends and build models that can determine whether a client purchases a long-term deposit based on factors such as gender, age, occupation, previous loans, previous campaign interactions, etc. For example, we are interested in identifying the duration of telemarketing calls that yield the most positive results. Which day of the week and which month should be focused on for a higher chance of success? Does it make a difference whether clients are called on their cellphone or on their telephone? Does the job or education of a client significantly affect their decision?
+
+The dataset contains data from a Portuguese commercial bank that details various bank-client relationship information. Using this information, we generated models to predict the outcome of purchase decisions of clients. 
+-	Logistic regression was used for …
+-	From the data analysis, we found a strong correlation in X and Y.  In general features that had xxx
+
+
+# Data Collection 
+This project uses a dataset that is originally sourced from a Portuguese retail bank and was used by [S. Moro, P.cortez and P. Rita}. The dataset contains features related to direct marketing campaigns for the purpose of selling bank long-term deposits. We obtained the dataset from the UC Irvine Machine Learning Repository.
+
+o	Dataset Description
+•	The dataset is multivariate that contains 45211 instances (rows) with 21 features (columns). Out of the 21 features, 20 are used as potential predicting factors that might affect whether a direct marketing campaign that involved telemarketing calls is successful in selling a long-term deposit or not. The feature column titled “y” is used as the target column that details whether a client subscribed to a long-term deposit or no. 
+
+The feature columns can be divided into 3-4 subgroups: personal bank details, previous contacts for current campaign, contacts for previous campaigns, and social and economic attributes. The details of each subgroup and its constituents’ features can be found in the appendix xxx. The dataset contains columns that are numerical such as age, duration, pdays, etc and columns that are categorical such as job, education, loan, etc. Within the numerical features, there are continuous variables such as cons.price.idx and discrete variables such as Employment.number. Similarly, within the categorical columns, there are variables such as education are ordinal and variables such as job are nominal. 
+
+#Data Manipulation
+## Importing the dataset
+The dataset didnt contain "NA" values but rather had "Unknown" values in multiple columns. On initial inspection of the dataset, it became apparent that the "unknown" values were missing values in most columns. However, this was not the case for all columns. Explained further in xxx. Therefore, we imported the dataset with specifying the unknown values in the dataset as NA values.
+
+
+```{r}
+bank <- read.csv("bank-additional-full.csv", sep=";", na="unknown")
+```
+
+```{r echo=TRUE, warning=FALSE}
+summary(bank)
+```
+
+```{r echo=TRUE, warning=FALSE}
+str(bank)
+```
+
+Renaming columns
+For ease of coding and a proper standard among the columns names we remaned the columns with slight modifications as shown below.
+```{r}
+colnames(bank) <- c("Age", "Job", "Marital", "Education","Default","Housing" ,"Loan","Contact","Month","Last.Contact.Day",  "Duration", "Campaign" ,"Pdays" , "Previous.Contacts" , "Poutcome", "Emp.var.rate","Cons.price.idx", "Cons.conf.idx" ,
+"Euribor3m", "Employment.number","y")
+columns <- colnames(bank)
+Factorcols <- c("Job", "Marital", "Default","Education","Housing" ,"Loan","Contact","Month","Last.Contact.Day", 'Poutcome', 'y')
+```
+
+Removing the dot in the "admin." value in the job column
+```{r}
+bank$Job = str_replace(bank$Job,"[.]","istration")
+```
+
+data type of columns
+```{r}
+sapply(bank, class)
+```
+
+##keeping a copy of original dataframe
+```{r}
+data <- data.frame(bank)
+```
+
+
+
+
+
+#Data cleaning
+
+##Handling null values
+
+Many columns such as Default, Education, Loan, Housing, Job etc. contained a considerable amount of NA values, especially Default. Default had 20.87% of NA values. On further inspection, it was also noticed that the default column was highly imbalanced with only 3 "yes" values and 32469 "no" values, ontop of 8518 NA values. Therefore, we decided to drop the default column. The plot below gives a good idea of how many NA values are present in each column. 
+
+-   percentage of null values (can we add these percentages to graph below?)
+```{r}
+sapply(bank, function(x) round((sum(is.na(x))/length(x))*100,2))
+```
+
+Visualizing missing data
+```{r}
+gg_miss_var(bank)
+```
+For handling the rest of the NA values, we took 2 different approaches. First, where NA values are considered as NA values and therefore dealt with either deletion or imputations. Second, where NA values, that were originally labelled as "unknown" in the dataset, are considered as a separate category in their respective column. For example, the default column details whether a client has credit in default or not - which translates to "yes" or "no". However, in real-world scenarios it is very plausible for their to exist a third category where a client may choose to not answer questions regarding their credit in default status. Questions such as credit in default, loans, etc can be a sensitive topic and therefore clients may choose not to comment on these questions. Therefore, we decided that "unknown" entries in the default column should be considered as one of the options for a response. Therefore, the default column has 3 possible responses/categories: yes, no, or unknown.
+
+For the Education column, NA values were dealt with using imputations. Using a contingency table between Education and job, simple logical inferences were made between the a client's job and their education. For example, most clients that have a management job are most likely to have a university degree. Most clients that have a services job are most likely to have a high school education. Therefore, using these inferences we imputed the NA values of the Education column. Similarly, imputations were made for the Job column. If client's age is greater or equal to 66 and Job column is equal to NA then we imputted the missing value to retired.
+
+For Housing, Loan, and Default columns the NA values were replaced back to "unknown" values as they will be considered as a category within their respective columns, as discussed before.
+
+No logical inference could be made for the marital column and therefore rows containing NA values were removed entirely. It was also noticed there were 990 rows where the Education and Job column both had NA values. This suggests that the NA values are not a result of some random event but rather are related. Furthermore, since our method of imputation used earlier would not be possible as both values are missing, we decided to remove all these rows. It can now be seen that the cleaned dataset contains no NA values.
+
+
+##contingency table to infer job from education and viz
+```{r}
+JobvsEd <- table(bank$Job,bank$Education,useNA = "always")
+JobvsEd
+```
+
+filling null values of job based on Age
+```{r}
+bank$Job[bank$Age >= 66 & is.na(bank$Job)] <- "retired"
+```
+
+filling the null values for education
+```{r}
+remove_null_Ed <- function(bank, tab){
+  for(column in unique(bank$Job[!is.na(bank$Job)])){
+    bank$Education[bank$Job==column & is.na(bank$Education)] <- names(which.max(tab[column,]))
+  }
+  return(bank)
+}
+```
+
+```{r}
+bank <- remove_null_Ed(bank, JobvsEd)
+```
+
+filling the null values for Job
+```{r}
+remove_null_Job <- function(bank, tab){
+  for(column in unique(bank$Education[!is.na(bank$Education)])){
+    bank$Job[bank$Education==column & is.na(bank$Job)] <- names(which.max(tab[,column]))
+  }
+  return(bank)
+}
+```
+
+```{r}
+bank <- remove_null_Job(bank, JobvsEd)
+```
+
+contingency for personal and housing loan
+```{r}
+table(bank$Housing,bank$Loan,useNA = "always")
+```
+
+replacing with unknowns
+```{r}
+bank$Housing[is.na(bank$Housing)] <- "unknown"
+bank$Loan[is.na(bank$Loan)] <- "unknown"
+bank$Default[is.na(bank$Default)] <- "unknown"
+```
+
+null values in marital
+```{r}
+sum(is.na(bank$Marital))
+```
+
+removing rows with marital, Job or education as null
+```{r}
+bank <- na.omit(bank)
+```
+
+Again visualize missing
+```{r warning=FALSE}
+gg_miss_var(bank)
+```
+**End of handling Missing Values**
+
+##data transformations
+
+All categorical columns were assigned to the factors datatype for the ease of using them in various prediction models. Some of the categorical columns were ordinal while others were nominal. Education, Month, and day_of_week are ordinal columns and thus they were assigned as an ordered factor. Job, marital, housing, loan, etc were assigned as unordered factors. However, after using ordered factor columns in our prediction models, we realised there was not much benefit in using them while it caused minor complications in some models. Therefore, we instead chnaged all categorical columns to unordered factor columns. 
+
+Feature scaling was used for all the numerical variables using MinMax scaling to normalize the range of the variables and ensure the prediction models work properly.
+reorder the row indices.
+```{r}
+rownames(bank) <- 1:nrow(bank) 
+```
+
+
+
+<!-- COMMENTED DUE TO NOT BEING USED IN THE FINAL CODE - CONVERTING CATEGORICAL TO ORDERED FACTORS -->
+<!-- ##handling ordinal values columns Job, Education, month and last contact day -->
+<!-- ```{r} -->
+<!-- bank$Education <- factor(bank$Education, levels = c("basic.4y","basic.6y","basic.9y","high.school","professional.course", "university.degree"), ordered = TRUE) -->
+<!-- bank$Job <- factor(bank$Job, levels = c('administration','blue-collar','entrepreneur','housemaid','management','retired','self-employed','services','student','technician','unemployed'), ordered = TRUE) -->
+<!-- bank$Month <- factor(bank$Month, levels=c("mar","apr","may","jun","jul","aug","sep","oct","nov","dec"), ordered = TRUE) -->
+<!-- bank$Last.Contact.Day <- factor(bank$Last.Contact.Day,levels=c("mon","tue","wed","thu","fri"), ordered = TRUE) -->
+<!-- ``` -->
+
+
+MIGHT REMOVE RESCALING PART FROM HERE?
+
+<!-- ##rescaling continuous columns -->
+<!-- ```{r} -->
+<!-- str(bank) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- minmax <- function(x) { -->
+<!--     return((x- min(x)) /(max(x)-min(x))) -->
+<!-- } -->
+<!-- scaled_df <- as.data.frame(sapply(bank[,c("Age","Duration","Campaign","Pdays","Previous.Contacts","Emp.var.rate","Cons.price.idx","Cons.conf.idx","Euribor3m","Employment.number")], minmax)) -->
+<!-- bank <- subset(cbind(bank,scaled_df),select=-c(Age,Duration,Campaign,Pdays,Previous.Contacts,Emp.var.rate,Cons.price.idx,Cons.conf.idx,Euribor3m,Employment.number)) -->
+<!-- ``` -->
+
+
+
+##Converting character types to factors
+```{r}
+bank[Factorcols] <- lapply(bank[Factorcols], as.factor)
+```
+
+```{r}
+str(bank)
+```
+
+
+
+#Exploratory Data Analysis 
+
+
+
+dimension of the dataset
+```{r}
+dim(bank)
+```
+There are 40990 rows and 21 columns
+
+Taking a glance at first and last five rows
+```{r}
+head(bank)
+```
+
+```{r}
+tail(bank)
+```
+
+detailed statistics about the numerical features
+```{r}
+describe(bank)
+```
+From the basic statistics and summary of the numerical columns, we can observe a few intersting things about the mean, median, min, max, etc. First, regarding the Pdays columns, it can be observed the mean is 962.6. The median and the max equals to 999 of the Pdays columns. At first glance this seems strange and is misleading, but it is due to the fact that the way the data was recorded. In the Pdays column, if a client was not contacted after a previous campaign then it is recorded as 999. It could be questioned why not record that as "0". This is because "0" values in the pdays column signifies that at the time of recording/collecting this data, there have been 0 days since the previous contact. i.e the client was contacted on the same day as the data was collected. What the pdays mean of 962.6 and median of 999 tells us is that the vast majority of clients were not contacted since the previous campaign. 
+
+The table shows the mean, median and max of Pdays if we remove all the 999 entries.
+```{r}
+summary(bank$Pdays[bank$Pdays!=999])
+```
+
+
+We considered changing the 999 values to something else as it might skew the prediction models to larger values. However, we realised it is unnecessary as results from the prediction can be interpreted using some threshold instead. If pdays values is considerably high, then that can be simply interpreted as 'not previously contacted'.
+
+Age and Campaign columns have reasonable mean and median values, which are close to each other. The 'Previous' column has a mean of 0.1729 and median of 0. As the previous column details the number of contacts performed before the current campaign, the mean and median suggest that the majority of clients were not contacted previously. This indicates that the bank is mostly focused on targeting new customers with their campaigns (as no previous contacts have been made) or the bank has only recently started contacting customers for telemarketing purposes.
+
+Nothing noteworthy is dsiplayed about the mean and medians of the economical, social data columns.
+
+
+
+```{r}
+bank %>% inspect_types()
+```
+
+**Insights**:
+-   There are 11 factor columns
+-   There are 5 integer columns
+-   There are 5 numeric columns
+
+```{r}
+bank%>%inspect_cat()
+```
+The table above shows the most common category in each column with their respective percentages. In general columns that have multiple categories have lower percentages of the most common category. Columns such as default, loan, poutcome that have 2 or 3 categories are most imbalanced than the rest. It also interesting to see the most common education level and jobs of the clients that were contacted. 82.4% of the contacted clients dont have personal loans.
+
+
+## Univariate Analysis
+collecting columns of factor type
+```{r}
+factors <- subset(bank,select = names(Filter(is.factor,bank)))
+```
+
+```{r}
+summary(factors)
+```
+
+##Barcharts
+
+The barcharts below shows that our dataset is highly imbalanced. The y-output has 36371 'No' values and 4619 'Yes' values. That is almost an imbalance ratio of 8:1 with 88.7% of the responses refusing the long-term deposit. 
+
+```{r}
+OutputCount <- factors%>%
+            dplyr::count(y)%>%
+            dplyr::mutate(perc = n/sum(n) * 100)
+
+pl <- ggplot (data = OutputCount, aes(x = y, y = n, fill = y))
+pl <- pl + geom_col()
+pl <- pl + geom_text(aes(x = y, y = n
+                         , label = paste0(n, " (", round(perc,1),"%)")
+                         , vjust = -0.5
+                         ))
+pl <- pl + theme_solarized() + scale_colour_solarized("red")
+pl <- pl + labs(title ="Bar chart showing count and percentage", x="y(output)", y="count (percentage)")
+pl
+```
+
+
+collecting columns of numeric type
+```{r}
+numerics <- subset(bank,select = names(Filter(is.numeric,bank)))
+```
+
+
+
+##Histogram with Density plot
+
+We used histograms with density plots to analyse the distribution of the various various that we will be using as predicting factors. 
+```{r}
+distplotsnumerics <- function(bank,numerics){
+  for(col in names(numerics)){
+    distplot <- ggplot(numerics, aes(x = bank[[col]])) + 
+    geom_histogram(aes(y = ..density..),
+                   colour = 1, fill = "lightgreen", bins = 20) +
+    geom_density(lwd = 1, colour = 4,
+                 fill = 1, alpha = 0.25) + labs(x = col)
+    print(distplot)
+  }
+}
+```
+
+
+```{r}
+distplotsnumerics(bank,numerics[,2:4])
+```
+Last 50 columns in descending order of Duration
+```{r}
+head(bank[order(bank$Duration, decreasing= T),], n = 50)
+```
+
+#insights
+- The Duration and Campaign variables are strongly positively skewed, while pdays is strongly negatively skewed.
+Interesting to note that whenever duration is on the longer end (higher value), then the client has not been contacted prior to this campaign as well (pdays=999) and thus poutcome is "nonexistent". This is observable from the table above that shows the dataset in descending order by Duration. This observation can be understood in the context that when clients have not been contacted before then more time would be required to introduce the purpose of the current call, build trust, relay the required information regarding the current campaign, etc and thus the duration of the call will be longer. On the contrary, when clients have been contacted previously then relatively less time will be required to explain the purpose of the call as the customer will be familiar with such calls from previous experience.
+
+
+# Log transformation for right skewed features
+```{r}
+logpn1 <-ggplot(numerics, aes(x = log(Duration))) + 
+  geom_histogram(aes(y = ..density..),
+                 colour = 1, fill = "lightgreen") +
+  geom_density(lwd = 1, colour = 4,
+               fill = 1, alpha = 0.25, bins = 20)
+logpn1
+```
+
+
+A common strategy to fix skewness is use log tranformation. The graph above shows the duration column after being log transformed. Eventhough, a log transform makes the data distribution more normally distributed it did provide any significant improvement over the non-log transformed data in our testing. This is most likely due to the fact that in regression models there are no assumptions made about the distribution shape of the independent variable. Especially in logistic regression, a log transformation of the independent variable would make it make it difficult to interpret the odds ratio of the dependent variable as it is a per-unit change of the independent variable. For example, for each additional log-unit of x (duration), the output of y increases by xx amount. Therefore, we did not use log transformations and instead used the original data.
+
+
+
+## Overlay densityplots for age
+```{r warning=FALSE}
+ggplot(bank,aes(x=Age, fill=y)) + geom_histogram(binwidth = 1) + scale_x_continuous(breaks = seq(10, 120, 5), lim = c(10, 120))
+```
+The overlay of the two histograms of both the subscribed (yes) and unsubscribed (no) clients against the age variable illustrates a big gap in the count of each age group among 'yes' and 'no'. There are considerably less clients who subscribed to the term deposit than those that declined in each age category. It can be observed that the age group that was cotacted the most frequently, in general, also responded positively to subscribing to a term deposit - the highest bin for the 'yes' respondents corresponds with the bin (age) that was contacted the most.
+
+
+
+FOR THIS: MONTH AND DAY AS WELL
+Job vs y and Education vs Y
+```{r}
+ggplot(bank,aes(x=Education, fill=y)) + geom_bar(position = "dodge") + geom_text(aes(label=..count..),stat='count',position=position_dodge(0.9),vjust=-0.2) + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + facet_wrap(~y, scales = "free_y")
+
+ggplot(bank,aes(x=Job, fill=y)) + geom_bar() + geom_bar(position = "dodge") + geom_text(aes(label=..count..),stat='count',position=position_dodge(0.9),vjust=-0.2) + theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))+ facet_wrap(~y,scales = "free_y")
+```
+The bar plots of Jobs and Education vs y-output shows that the categories are relatively balanced in these 2 columns. For the education plot, the 'illeterate' catergory is only 14 for for the 'no' respondents and 4 for the 'yes' respondents. Since it is significantly lower than the other categories, 'illeterate' rows were removed from the dataset. A general trend can be seen that the highe the educaiton level, the more likely they are to be contacted by the bank and are also more likely to respond in a positive manner. This trend is seen in both education and job columns. Except for the retired category and services category in the job column. Compared to the other categories, the retired category was contacted less but a higher proportion of them responded yes. The contrary is true for the services category.
+
+Duration has lot of outliers
+```{r}
+ggplot(bank,aes(x=Duration)) + geom_bar() + facet_wrap(~y, scales = "free_y") + scale_color_brewer(palette="Dark2")
+```
+In the bar chart of the duration column, it can be noted that when clients refuse to subscribe to a term deposit then the call duration are mostly towards the low end. This can be explained that when clients are certain they don't want to subscribe to the term deposit then refuse early on in the call and the call ends. However, when clients ended-up successfully subscribing to term deposits then it can be seen that call durations are longer on average - observed from the slightly less positively skewed chart of the 'yes' respondents when compared to the chart of the 'no' respondent. This is mostly due to the extra time needed to either clarify or convince a client regarding the details of the term deposit.
+
+
+#Boxplots
+
+
+```{r}
+
+bp1 <- ggplot(numerics, aes(x = factor(0), y = Age, fill = factor(0))) + 
+  geom_boxplot(outlier.colour="blue", outlier.shape=8, outlier.size=4) +
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank(),legend.position="none")+
+  stat_summary(fun = "mean", geom = "point", shape = 8,
+               size = 2, color = "white")
+bp1
+
+
+bp2 <- ggplot(numerics, aes(x = factor(0), y = Duration, fill = factor(0))) + 
+  geom_boxplot(outlier.colour="blue", outlier.shape=8, outlier.size=4) +
+  theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank(),legend.position="none")+
+  stat_summary(fun = "mean", geom = "point", shape = 8,
+               size = 2, color = "white")
+bp2
+```
+The boxplots Age and Duration show that both columns have a lot of outliers present. It is especially exhibited in Duration where the interquartile range is very small with a range of about 200. While the outliers can go all the way to around 5000s. We experimented with removing the outliers and running the models but they yielded no significant results. Thus, it was decided to keep the outliers as most of them were in columns that were related directly to the telemarketing campaign such as pdays, previous, campaign, and duration and most probably hold important information.
+
+
+
+collecting integer columns
+```{r}
+integers <- subset(bank,select = names(Filter(is.integer,bank)))
+```
+
+```{r}
+x <- c(1:nrow(bank))
+ggplot(integers, aes(x=x, y=Previous.Contacts)) + 
+    geom_point(size=2) +
+    theme_solarized()
+```
+
+
+
+IF WE CAN MAKE THESE BOXPLOTS IN A CONDENSED MANNER 
+##numeric boxplots
+```{r}
+boxplotsnumerics <- function(bank,numerics){
+  for(col in names(numerics)){
+    bp <- ggplot(numerics, aes(x = factor(0), y = bank[[col]], fill = factor(0))) + 
+    geom_boxplot(outlier.colour="blue", outlier.shape=8, outlier.size=4) + labs(y = col) +
+    theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank(),legend.position="none")+
+    stat_summary(fun = "mean", geom = "point", shape = 8,
+                 size = 2, color = "white")
+    print(bp)
+  }
+}
+```
+
+```{r}
+boxplotsnumerics(bank,numerics)
+```
+
+
+
+**Correlation numerical columns:**
+Parametric for Pearson, nonparametric for Spearman's correlation
+```{r}
+ggstatsplot::ggcorrmat(data = bank, type = "nonparametric", colors = c("darkred", "white", "steelblue"))
+```
+In the correleation matrix above, the non-significant correlations (by default at the 5% significance level with the Holm adjustment method) are shown by a cross on the correlation coefficients. Looking at the crosses, its clear there is no significant correlation between Age and Duration, Campaign, Pdays, and Previous.contacts. Interestingly there are very strong correlations between the social and economic data. The Strongest positive correlation of 0.93 is between Euribor3m and Employment.number. A strong correlation between independent variables may cause a  multicollinearity problem which might make our models sensitive to small changes. It makes is difficult for the model to estimate the relationship between the dependent variable and the independent variables in an independent manner because the correlated independent variables will tend to change in unison. However, it is not always a problem and is discussed further in the models section.
+
+
+#Statistical Analysis
+##chi-square statistical test for correlation of categorical features
+```{r}
+summary(bank[Factorcols])
+```
+
+## testing relationship between Factor columns and y(subscribed or unsubscribed)
+measuring the effect size
+```{r}
+cramersv <- function(x,n,d){
+  v <- sqrt(x/(n*d))
+  return(v)
+}
+```
+
+Effect size interpretation for cramersv for df=1: small(.1), medium(.3), large(.5)
+H0: There is no relationship(Independent)
+H1: There is a relationship(dependent)
+```{r}
+chisquare_test <- function(bank,Factorcols)
+{  n <- nrow(bank)
+  for(col in Factorcols[-length(Factorcols)]){
+    if(col!="Default")
+    {
+      print(paste("*",col,"*"))
+      print(table(bank[[col]],bank$y))
+      chi <- chisq.test(bank[[col]],bank$y)
+      print(chi)
+      print(paste("effect size:",cramersv(chi$statistic,n,chi$parameter)))
+    }
+  }
+}
+```
+
+```{r}
+chisquare_test(bank,Factorcols)
+```
+**chi-squared test results**
+-   The test gives the categorical columns are dependent on output-y but, the effect size is not so significant for all the cases except Poutcome
+
+## Education category as illiterate are very few therefore dropping rows with illiterate
+1)  illiterates are more likely to unsubscribe beacause of the lack of financial knowledge
+2)  Except Loan and Housing Loan remaining all columns are highly correlated with output
+
+```{r}
+bank <- subset(bank, Education!="illiterate")
+```
+
+dropping unused factor levels in Education
+```{r}
+bank$Education <- droplevels(bank$Education)
+```
+
+```{r}
+levels(bank$Education)
+```
+
+## testing correlation between numerical and output
+```{r}
+graph <- ggplot() + geom_boxplot(aes(bank$y,bank[["Duration"]]))
+graph
+```
+Since, the overlap of boxplot is lesser they are highly correleted with each other which is already given in problem description
+
+##Anova for analysis of variances
+```{r}
+aov.dur <- aov(Duration~y,data=bank)
+summary(aov.dur)
+```
+
+##Bartlett's test for homogeneity of variances
+```{r}
+bartlettfornumerics <- function(bank,numerics){
+  for(col in names(numerics)){
+    print(paste("*",col,"*"))
+    print(bartlett.test(bank[[col]],bank$y))
+  }
+}
+```
+
+```{r}
+bartlettfornumerics(bank,numerics)
+```
+
+```{r}
+boxplotsnumericsvsy <- function(bank,numerics){
+  for(col in names(numerics)){
+    graph <- ggplot() + geom_boxplot(aes(bank$y,bank[[col]]))
+    print(graph)
+  }
+}
+```
+
+```{r}
+boxplotsnumericsvsy(bank,numerics)
+```
+
+##data transformations
+```{r}
+summary(bank)
+```
+
+removing Default column because the ratio of yes to no is unbalanced
+```{r}
+bank <- subset(bank,select=-c(Default))
+```
+
+removing Duration since we can know the output only after the call has been made
+```{r}
+bank <- subset(bank,select=-c(Duration))
+```
+
+```{r}
+levels(bank$y) <- c(0,1)
+```
+
+
+##handling categories
+```{r}
+bindata <- subset(dummy_cols(bank,remove_first_dummy = TRUE), select=-c(Job,Education,Month,Last.Contact.Day,Marital,Housing,Loan,Contact,Poutcome))
+```
+
+
+```{r}
+bindata <- subset(bindata,select=-c(y_1))
+```
+
+##rescaling continuous columns
+```{r}
+str(bindata)
+```
+```{r}
+str(bank)
+```
+
+minmax scaling
+```{r}
+minmax <- function(x) {
+    return((x- min(x)) /(max(x)-min(x)))
+}
+```
+
+```{r}
+bank <- bank%>%mutate_if(is.numeric,minmax)
+```
+
+```{r}
+bindata <- bindata%>%mutate_if(is.numeric,minmax)
+```
+
+
+# Split the data into training and test set
+```{r}
+set.seed(115)
+trainIndices = sample(1:dim(bank)[1],round(.8 * dim(bank)[1]))
+```
+
+# Build bank test/train
+```{r}
+bank.train = bank[trainIndices,]
+bank.test = bank[-trainIndices,]
+```
+
+```{r}
+print(table(bank.train$y)/nrow(bank.train))
+print(table(bank.test$y)/nrow(bank.test))
+bank.test.class <- bank.test$y
+bank.test <- subset(bank.test,select=-c(y))
+```
+# Build bindata test/train
+```{r}
+bin.train = bindata[trainIndices,]
+bin.test = bindata[-trainIndices,]
+```
+
+```{r}
+print(table(bin.train$y)/nrow(bin.train))
+print(table(bin.test$y)/nrow(bin.test))
+bin.test.class <- bin.test$y
+bin.test <- subset(bin.test,select=-c(y))
+```
+
+#modelling 
+
+```{r}
+library(e1071)
+library(caTools)
+library(class)
+library(caret)
+library(ROSE)
+library(ROCR)
+```
+
+##Logistic Regression
+
+Starting with the full model
+```{r}
+glm.out <- glm(y~.,data=bank.train, family = "binomial")
+```
+
+```{r}
+summary(glm.out)
+```
+**Insights:**
+-   Na's above is due to two of the independent variables being perfectly collinear( Housing_unknown and loan_unknown) - Realized Housing and Personal Loan are collinear reason being client chooses to not disclose both together
+-   The AIC for full model is 18172 and there is a significant difference between Null and Residual deviance
+-   At first look, Job, Contact type, Month, Campaign, Pdays, Poutcome, Emp.var.rate,Cons.price.idx and cons.conf.idx are have significant influence on output
+-   coefficient estimates of monthmarch, Campaign, Pdays, Emp.var.rate, Cons.price.index has the most influence with unit change in them
+
+```{r}
+stepmodel <- stepAIC(glm.out,direction = "backward",trace = FALSE)
+stepmodel
+```
+#run this part at last
+```{r}
+library(bootStepAIC)
+```
+
+```{r}
+bootmod <- boot.stepAIC(glm.out,bank.train,B=50)
+bootmod
+```
+<!-- #saving bootstrap model -->
+<!-- ```{r} -->
+<!-- saveRDS(bootmod, "./final_model.rds") -->
+<!-- ``` -->
+
+<!-- #loading model -->
+<!-- ```{r} -->
+<!-- bootmod <- readRDS("./final_model.rds") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- bootmod -->
+<!-- ``` -->
+**Insights**
+-   We started with a full model having an AIC of 18172 then the Marital is found to be insignificant then we removed marital and this process is repeated and removed Housing, Loan, Age, Previous.Contacts and Euribor3m reducing the AIC to 18168, 18166, 18165, 18163, 18162 respectively
+-   Campaign,Cons.conf.idx,Cons.price.idx,Contacttelephone,Emp.var.rate,Monthmar,Monthmay,Pdays Poutcomenonexistent were selected 100% of the times.
+
+
+Fitting best model got from bootstrap stepwise AIC
+```{r}
+best.model <- glm(y ~ Job + Education + Contact + Month + Last.Contact.Day + Campaign + 
+    Pdays + Poutcome + Emp.var.rate + Cons.price.idx + Cons.conf.idx + 
+    Employment.number,data=bank.train,family = "binomial")
+```
+
+```{r}
+summary(best.model)
+```
+```{r}
+plot(best.model)
+```
+1)These plots have been made for linear models, they help us to identify some irregularities in the data, but they don’t have to affect the model since they are not have been designed for logistic regression.
+2) In the first plot lower line is showing the negative residuals when we are predicting the label as 0 and the superior line of points is when we have positive residuals when predicting 1.
+3)The second plot helps us to find out if we are using the right distribution and to detect skewness in our data, we can observe that is skewed and doesn’t fit adequately to the dashed line which would be the ideal scenario.
+4)This third plot helps us to identify homoscedasticity in the residuals from this spread we can infer that the residuals are spread wider and then decrease.
+5)The fouth graph shows the Cooks distance to identify the influence that have the outliers, overall we can observe that they don’t have a big effect because all the points are spread along the red dashed line.
+
+interpreting odds ratio
+```{r}
+oddsratio <- data.frame(exp(best.model$coefficients))
+oddsratio
+```
+seeing for any VIF 
+```{r}
+car::vif(best.model)
+```
+
+```{r}
+best.model1 <- glm(y ~ Job + Education + Contact + Month + Last.Contact.Day + Campaign + 
+    Pdays + Poutcome + Cons.price.idx + Cons.conf.idx + 
+    Employment.number,data=bank.train,family = "binomial")
+```
+
+```{r}
+car::vif(best.model1)
+```
+
+```{r}
+summary(best.model1)
+```
+**Takeaway:**
+-   It is not always preferred to take out multicollinearity induced in the models
+
+confusion matrix for best model
+```{r}
+pred_prob <- predict(best.model, bank.test ,type="response")
+```
+
+histogram of prediction probability
+```{r}
+hist(pred_prob)
+```
+
+```{r}
+confusionMatrix(table(Predicted=ifelse(pred_prob>0.5,1,0),Actual=bank.test.class))
+```
+#AUC-ROC-curve
+```{r}
+pred <- prediction(pred_prob,bin.test.class)
+perf <- performance(pred,"tpr","fpr")
+plot(perf,colorize=TRUE,main="ROC-Curve",xlab="1-Specificity",ylab="Sensitivity")
+abline(a=0,b=1)
+auc <- performance(pred,"auc")
+auc <- unlist(slot(auc,"y.values"))
+auc <- round(auc,4)
+legend(.6,.3,auc,title="AUC",cex = 1.2)
+```
+## understanding Logistic Regression
+
+-   Median of Deviance Residual is Low meaning that the model is not baised. Thus the model is not over or under estimating the output
+-   Null deviance: A low null deviance implies that the data can be modeled well merely using the intercept. If the null deviance is low, you should consider using few features for modeling the data.
+-   Residual deviance: A low residual deviance implies that the model you have trained is appropriate.
+-   These results are somehow reassuring. First, the null deviance is high, which means it makes sense to use more than a single parameter for fitting the model. Second, the residual deviance is relatively low, which indicates that the log likelihood of our model is close to the log likelihood of the saturated model. However, for a well-fitting model, the residual deviance should be close to the degrees of freedom (74), which is not the case here. For example, this could be a result of overdispersion (underdispersion in our case because residual deviance is much lower than )where the variation is greater than predicted by the model. This can happen for a Poisson model when the actual variance exceeds the assumed mean of 𝜇=𝑉𝑎𝑟(𝑌).
+
+##LDA 
+The main purpose of LDA is to find the linear combination of the different variables that persuade a customer to get a bank term deposit and we have two different groups so we can find only one useful discriminant function.
+
+<!-- # ```{r} -->
+<!-- # library(psych) -->
+<!-- # num_cols <- unlist(lapply(bank.train, is.numeric)) -->
+<!-- # data_num <- bank.train[ , num_cols] -->
+<!-- # png(height=800, width=800, pointsize=15, file="LDA.png") -->
+<!-- # pairs.panels(data_num, -->
+<!-- #              gap=0, -->
+<!-- #              bg=c("green","blue")[bank.train$y], -->
+<!-- #              pch=21) -->
+<!-- # dev.off() -->
+<!-- # ``` -->
+<!-- # ##Pairplot -->
+<!-- # ```{r} -->
+<!-- # png(height=800, width=800, pointsize=15, file="pairs.png") -->
+<!-- # bank.train %>% select(where(is.numeric)) %>% ggpairs() -->
+<!-- # dev.off() -->
+<!-- # ``` -->
+
+Renaming blue-collar and self-employed in both binary train and test sets
+```{r}
+colnames(bin.train)[11] <- "Job_bluecollar"
+colnames(bin.train)[16] <- "Job_selfemployed"
+colnames(bin.test)[10] <- "Job_bluecollar"
+colnames(bin.test)[15] <- "Job_selfemployed"
+```
+
+Dropping Housing unknown because of raising errors due to collinearity with Loan unknown
+```{r}
+bin.train <- subset(bin.train, select=-c(Housing_unknown))
+bin.test <- subset(bin.test, select=-c(Housing_unknown))
+```
+
+
+```{r}
+linear <- lda(y~.,data=bin.train)
+linear
+```
+The discriminant function is -0.0499*age--0.7083*Campaign+…+1.0332*Poutcome_success. We can observe by the prior probabilities that 88.62% of the training set belongs to group 0 and only 11.37% belongs to 1.
+```{r}
+p <- predict(linear, bin.test)
+```
+
+```{r}
+ldahist(data = p$x, g=bin.test.class)
+```
+We can notice that both groups are overlapping which is not a good signal, so we can infer that there is not a proper separation between the groups.
+
+##LDA confusion matrix
+
+```{r}
+confusionMatrix(table(Predicted=p$class,Actual=bin.test.class))
+```
+
+```{r}
+par(mfrow=c(1,1))
+plot(p$x[,1], p$class, col=bin.test.class)
+```
+
+**Insights:**
+-   The LDA has got an accuracy of 88.87% and the above graph corresponds to posterior probability vs output There is a lot of overlap of output with each other but in general a good seperation.
+
+#AUC-ROC-curve
+```{r}
+pred <- prediction(p$posterior[,2],bin.test.class)
+perf <- performance(pred,"tpr","fpr")
+plot(perf,colorize=TRUE,main="ROC-Curve",xlab="1-Specificity",ylab="Sensitivity")
+abline(a=0,b=1)
+auc <- performance(pred,"auc")
+auc <- unlist(slot(auc,"y.values"))
+auc <- round(auc,4)
+legend(.6,.3,auc,title="AUC",cex = 1.2)
+```
+**Insights:**
+-   The model gives a AUC score of 78%. Since, the output variable is quite imbalanced and separation of output by variables are not so significant even then LDA performs well on the test set. 
+
+##QDA
+```{r}
+qda <- qda(y~.,data=bin.train)
+qda
+```
+
+```{r}
+pred <- predict(qda,bin.test)
+```
+
+##qda confusion matrix
+```{r}
+confusionMatrix(table(Predicted=pred$class, bin.test.class))
+```
+The accuracy is 86% 
+```{r}
+par(mfrow=c(1,1))
+plot(pred$posterior[,2], pred$class, col=bin.test.class)
+```
+AUC-ROC of QDA
+```{r}
+pred <- prediction(pred$posterior[,2],bin.test.class)
+perf <- performance(pred,"tpr","fpr")
+plot(perf,colorize=TRUE,main="ROC-Curve",xlab="1-Specificity",ylab="Sensitivity")
+abline(a=0,b=1)
+auc <- performance(pred,"auc")
+auc <- unlist(slot(auc,"y.values"))
+auc <- round(auc,4)
+legend(.6,.3,auc,title="AUC",cex = 1.2)
+```
+
+##Knn
+```{r}
+library(pROC)
+```
+KNN is a model that classifies according to the distance of the new observations, usually is used the Euclidean distance for this purpose, and uses the voting method to choose the most frequent label. The inductive bias of this model is that similar points should have similar labels.
+```{r}
+classifier_knn <- knn(train = subset(bin.train, select = -c(y)),
+                      test = bin.test,
+                      cl = bin.train$y,
+                      k = 4)
+```
+
+
+```{r}
+# Confusion Matrix
+cm <- confusionMatrix(table(Predicted=classifier_knn, Actual=bin.test.class))
+cm
+```
+The accuracy is 88.7% which is similar to the above presented models
+```{r}
+roc.curve(bin.test.class, classifier_knn)
+```
+It is found that knn has an auc of 61% which is quite low when compared with others
+
+##naive bayes
+This algorithm follows a probabilistic approach according to the Bayes Theorem, the inductive bias assumes the independence of the predictors. To realize this first the algorithm builds a frequency table, after it creates a likelihood table and finally is calculated the posterior probability for each class and it selects the greatest probability to classify.
+```{r}
+classifier_cl <- naiveBayes(y ~ ., data = bin.train, type="prob")
+ 
+# Predicting on test data'
+y_pred <- predict(classifier_cl, newdata = bin.test)
+ 
+# Confusion Matrix
+cm <- table(Predicted=y_pred, Actual=bin.test.class)
+ 
+# Model Evaluation
+confusionMatrix(cm)
+```
+The naive bayes is giving an accuracy of 87% less accuracy compared to Knn
+
+```{r}
+roc.curve(bin.test.class, y_pred)
+```
+Auc score is 67% which is better than the Auc of knn(61%)
+
+##Conclusion
+-   Interms of Accuracy Logistic regression has an accuracy of 90% and other models have an accuracy ranging betwween 86 to 88%
+-   AUC score is similar for Logistic, LDA and QDA whereas It is not significant in case of knn and naive bayes
+-   Job + Education + Contact + Month + Last.Contact.Day + Campaign + Pdays + Poutcome + Emp.var.rate + Cons.price.idx+Cons.conf.idx + Employment.number decides whether client subscribe the term deposit or not
